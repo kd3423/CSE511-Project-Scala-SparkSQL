@@ -16,6 +16,26 @@ object SpatialQuery extends App{
 
     return false
   }
+  
+      def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean = 
+	{
+		if (pointString1 == null || pointString2 == null || pointString1.isEmpty() || pointString2.isEmpty())
+			return false
+        val al = pointString1.split(",")
+		val bl = pointString2.split(",")
+        val a = al(0).toDouble
+        val b = al(1).toDouble
+        val c = bl(0).toDouble
+        val d = bl(1).toDouble
+
+		val indist = pow(a - b, 2) + pow(c - d, 2)
+        val dist = sqrt(indist)
+        if (dist <= distance)
+            return true
+        else
+            return false
+    }
+	
   def runRangeQuery(spark: SparkSession, arg1: String, arg2: String): Long = {
 
     val pointDf = spark.read.format("com.databricks.spark.csv").option("delimiter","\t").option("header","false").load(arg1);
@@ -53,7 +73,7 @@ object SpatialQuery extends App{
     pointDf.createOrReplaceTempView("point")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=>((true)))
+    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=> {ST_Within(pointString1, pointString2, distance)})
 
     val resultDf = spark.sql("select * from point where ST_Within(point._c0,'"+arg2+"',"+arg3+")")
     resultDf.show()
@@ -70,7 +90,7 @@ object SpatialQuery extends App{
     pointDf2.createOrReplaceTempView("point2")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=>((true)))
+    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=> {ST_Within(pointString1, pointString2, distance)})
     val resultDf = spark.sql("select * from point1 p1, point2 p2 where ST_Within(p1._c0, p2._c0, "+arg3+")")
     resultDf.show()
 
