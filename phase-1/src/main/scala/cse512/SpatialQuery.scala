@@ -10,7 +10,7 @@ object SpatialQuery extends App{
 
     if(pt(0)<=recPts(2) && pt(0)>=recPts(0) && pt(1)>=recPts(1) && pt(1)<=recPts(3)) return true
     else if(pt(0)>=recPts(2) && pt(0)<=recPts(0) && pt(1)<=recPts(1) && pt(1)>=recPts(3)) return true
-    else false
+    return false 
   }
   def runRangeQuery(spark: SparkSession, arg1: String, arg2: String): Long = {
 
