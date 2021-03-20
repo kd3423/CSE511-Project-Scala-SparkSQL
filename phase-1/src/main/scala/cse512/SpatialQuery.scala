@@ -3,13 +3,22 @@ package cse512
 import org.apache.spark.sql.SparkSession
 
 object SpatialQuery extends App{
+
+  def ST_Contains(rectangleQuery: String, point: String): Boolean = {
+    val recPts = rectangleQuery.split(",").map(_.toDouble)
+    val pt = point.split(",").map(_.toDouble)
+
+    if(pt(0)<=recPts(2) && pt(0)>=recPts(0) && pt(1)>=recPts(1) && pt(1)<=recPts(3)) return true
+    else if(pt(0)>=recPts(2) && pt(0)<=recPts(0) && pt(1)<=recPts(1) && pt(1)>=recPts(3)) return true
+    else false
+  }
   def runRangeQuery(spark: SparkSession, arg1: String, arg2: String): Long = {
 
     val pointDf = spark.read.format("com.databricks.spark.csv").option("delimiter","\t").option("header","false").load(arg1);
     pointDf.createOrReplaceTempView("point")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>((true)))
+    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>{ST_Contains(queryRectangle,pointString)})
 
     val resultDf = spark.sql("select * from point where ST_Contains('"+arg2+"',point._c0)")
     resultDf.show()
@@ -26,7 +35,7 @@ object SpatialQuery extends App{
     rectangleDf.createOrReplaceTempView("rectangle")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>((true)))
+    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>{ST_Contains(queryRectangle,pointString)})
 
     val resultDf = spark.sql("select * from rectangle,point where ST_Contains(rectangle._c0,point._c0)")
     resultDf.show()
