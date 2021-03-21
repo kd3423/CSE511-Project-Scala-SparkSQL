@@ -1,7 +1,7 @@
 package cse512
 
 import org.apache.spark.sql.SparkSession
-import math
+import scala.math
 object SpatialQuery extends App{
 
   def ST_Contains(rectangleQuery: String, point: String): Boolean = {
