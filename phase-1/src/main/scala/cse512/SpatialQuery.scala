@@ -1,7 +1,7 @@
 package cse512
 
 import org.apache.spark.sql.SparkSession
-
+import math
 object SpatialQuery extends App{
 
   def ST_Contains(rectangleQuery: String, point: String): Boolean = {
@@ -16,8 +16,8 @@ object SpatialQuery extends App{
 
     return false
   }
-  
-      def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean = 
+
+  def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean =
 	{
 		if (pointString1 == null || pointString2 == null || pointString1.isEmpty() || pointString2.isEmpty())
 			return false
@@ -28,14 +28,14 @@ object SpatialQuery extends App{
         val c = bl(0).toDouble
         val d = bl(1).toDouble
 
-		val indist = pow(a - b, 2) + pow(c - d, 2)
-        val dist = sqrt(indist)
+		val indist = math.pow(a - b, 2) + math.pow(c - d, 2)
+        val dist = math.sqrt(indist)
         if (dist <= distance)
             return true
         else
             return false
     }
-	
+
   def runRangeQuery(spark: SparkSession, arg1: String, arg2: String): Long = {
 
     val pointDf = spark.read.format("com.databricks.spark.csv").option("delimiter","\t").option("header","false").load(arg1);
