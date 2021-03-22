@@ -1,6 +1,8 @@
 package cse512
 
 import org.apache.spark.sql.SparkSession
+import scala.math.sqrt
+import scala.math.pow
 
 object SpatialQuery extends App{
 
@@ -17,23 +19,24 @@ object SpatialQuery extends App{
     return false
   }
   
-      def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean = 
+  def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean =
 	{
 		if (pointString1 == null || pointString2 == null || pointString1.isEmpty() || pointString2.isEmpty())
 			return false
-        val al = pointString1.split(",")
-		val bl = pointString2.split(",")
-        val a = al(0).toDouble
-        val b = al(1).toDouble
-        val c = bl(0).toDouble
-        val d = bl(1).toDouble
 
-		val indist = pow(a - b, 2) + pow(c - d, 2)
-        val dist = sqrt(indist)
-        if (dist <= distance)
-            return true
-        else
-            return false
+    val al = pointString1.split(",")
+		val bl = pointString2.split(",")
+    val a = al(0).toDouble
+    val b = al(1).toDouble
+    val c = bl(0).toDouble
+    val d = bl(1).toDouble
+
+		val indist = math.pow(a - c, 2) + math.pow(b - d, 2)
+    val dist = math.sqrt(indist)
+    if (dist <= distance)
+      return true
+    else
+      return false
     }
 	
   def runRangeQuery(spark: SparkSession, arg1: String, arg2: String): Long = {
