@@ -18,14 +18,14 @@ object SpatialQuery extends App{
 
     return false
   }
-  
+
   def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean =
 	{
 		if (pointString1 == null || pointString2 == null || pointString1.isEmpty() || pointString2.isEmpty())
 			return false
 
     val al = pointString1.split(",")
-		val bl = pointString2.split(",")
+	val bl = pointString2.split(",")
     val a = al(0).toDouble
     val b = al(1).toDouble
     val c = bl(0).toDouble
@@ -38,7 +38,7 @@ object SpatialQuery extends App{
     else
       return false
     }
-	
+
   def runRangeQuery(spark: SparkSession, arg1: String, arg2: String): Long = {
 
     val pointDf = spark.read.format("com.databricks.spark.csv").option("delimiter","\t").option("header","false").load(arg1);
