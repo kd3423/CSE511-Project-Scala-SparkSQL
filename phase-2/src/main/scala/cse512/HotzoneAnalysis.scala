@@ -2,10 +2,9 @@ package cse512
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
-import org.apache.spark.sql.function
+import org.apache.spark.sql.functions
 
 object HotzoneAnalysis {
-
   Logger.getLogger("org.spark_project").setLevel(Level.WARN)
   Logger.getLogger("org.apache").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
