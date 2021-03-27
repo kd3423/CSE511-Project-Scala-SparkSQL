@@ -2,6 +2,7 @@ package cse512
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.function
 
 object HotzoneAnalysis {
 
@@ -32,6 +33,8 @@ object HotzoneAnalysis {
     joinDf.createOrReplaceTempView("joinResult")
 
     // YOU NEED TO CHANGE THIS PART
+
+
     // We get output something like [rectangleString, pointString] this means that a pointString falls within the rectangleString.
     // Here rectangleString is something like "-73.795658,40.743334,-73.753772,40.779114"
     // pointString is like "-73.766,40.7534"
