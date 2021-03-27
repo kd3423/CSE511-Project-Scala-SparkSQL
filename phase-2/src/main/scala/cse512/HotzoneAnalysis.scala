@@ -2,7 +2,7 @@ package cse512
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
-import org.apache.spark.sql.function
+import org.apache.spark.sql.functions
 
 object HotzoneAnalysis {
 
