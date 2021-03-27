@@ -5,7 +5,6 @@ import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.apache.spark.sql.functions
 
 object HotzoneAnalysis {
-
   Logger.getLogger("org.spark_project").setLevel(Level.WARN)
   Logger.getLogger("org.apache").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
