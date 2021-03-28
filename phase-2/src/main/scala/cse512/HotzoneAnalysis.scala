@@ -43,7 +43,7 @@ object HotzoneAnalysis {
     // ...
     // Count all the points that lie in a given rectangle. We need to do group by rectangle and count all the points that lie in that rectangle.
     val temp1 = joinDf.groupBy("rectangle").agg(count("*").alias("count"))
-    return temp1.select("rectangle", "count").orderBy(asc("rectangle"))
+    return temp1.select("rectangle", "count").orderBy(asc("rectangle")).repartition(1)
 
     // return joinDf // YOU NEED TO CHANGE THIS PART
   }
