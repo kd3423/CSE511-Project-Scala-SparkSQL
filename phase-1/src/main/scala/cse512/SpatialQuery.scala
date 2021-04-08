@@ -7,16 +7,14 @@ import scala.math.pow
 object SpatialQuery extends App{
 
   def ST_Contains(rectangleQuery: String, point: String): Boolean = {
-    if (!rectangleQuery.isEmpty && !point.isEmpty){
-      val recPts = rectangleQuery.split(",").map(_.toDouble)
-      val pt = point.split(",").map(_.toDouble)
+    if (rectangleQuery == null || point == null || rectangleQuery.isEmpty() || point.isEmpty())
+            return false	  
+    val recPts = rectangleQuery.split(",").map(_.toDouble)
+    val pt = point.split(",").map(_.toDouble)
 
-      if(pt(0)<=recPts(2) && pt(0)>=recPts(0) && pt(1)>=recPts(1) && pt(1)<=recPts(3)) return true
-      else if(pt(0)>=recPts(2) && pt(0)<=recPts(0) && pt(1)<=recPts(1) && pt(1)>=recPts(3)) return true
-      else return false
-    }
-
-    return false
+    if(pt(0)<=recPts(2) && pt(0)>=recPts(0) && pt(1)>=recPts(1) && pt(1)<=recPts(3)) return true
+    else if(pt(0)>=recPts(2) && pt(0)<=recPts(0) && pt(1)<=recPts(1) && pt(1)>=recPts(3)) return true
+    else return false
   }
 
   def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean =
