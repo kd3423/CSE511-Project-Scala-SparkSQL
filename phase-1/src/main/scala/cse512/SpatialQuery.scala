@@ -8,12 +8,20 @@ object SpatialQuery extends App{
 
   def ST_Contains(rectangleQuery: String, point: String): Boolean = {
     if (rectangleQuery == null || point == null || rectangleQuery.isEmpty() || point.isEmpty())
-            return false	  
-    val recPts = rectangleQuery.split(",").map(_.toDouble)
-    val pt = point.split(",").map(_.toDouble)
+            return false
+    val recPts = rectangleQuery.split(",")
+    val pt = point.split(",")
 
-    if(pt(0)<=recPts(2) && pt(0)>=recPts(0) && pt(1)>=recPts(1) && pt(1)<=recPts(3)) return true
-    else if(pt(0)>=recPts(2) && pt(0)<=recPts(0) && pt(1)<=recPts(1) && pt(1)>=recPts(3)) return true
+    val rectx1 = recPts(0).toDouble
+    val recty1 = recPts(1).toDouble
+    val rectx2 = recPts(2).toDouble
+    var recty2 = recPts(3).toDouble
+
+    val x1 = pt(0).toDouble
+    val y1 = pt(1).toDouble
+
+    if(x1<=rectx2 && x1>=rectx1 && y1>=recty1 && y1<=recty2) return true
+    else if(x1>=rectx2 && x1<=rectx1 && y1<=recty1 && y1>=recty2) return true
     else return false
   }
 
