@@ -7,16 +7,22 @@ import scala.math.pow
 object SpatialQuery extends App{
 
   def ST_Contains(rectangleQuery: String, point: String): Boolean = {
-    if (!rectangleQuery.isEmpty && !point.isEmpty){
-      val recPts = rectangleQuery.split(",").map(_.toDouble)
-      val pt = point.split(",").map(_.toDouble)
+    if (rectangleQuery == null || point == null || rectangleQuery.isEmpty() || point.isEmpty())
+            return false
+    val recPts = rectangleQuery.split(",")
+    val pt = point.split(",")
 
-      if(pt(0)<=recPts(2) && pt(0)>=recPts(0) && pt(1)>=recPts(1) && pt(1)<=recPts(3)) return true
-      else if(pt(0)>=recPts(2) && pt(0)<=recPts(0) && pt(1)<=recPts(1) && pt(1)>=recPts(3)) return true
-      else return false
-    }
+    val rectx1 = recPts(0).toDouble
+    val recty1 = recPts(1).toDouble
+    val rectx2 = recPts(2).toDouble
+    var recty2 = recPts(3).toDouble
 
-    return false
+    val x1 = pt(0).toDouble
+    val y1 = pt(1).toDouble
+
+    if(x1<=rectx2 && x1>=rectx1 && y1>=recty1 && y1<=recty2) return true
+    else if(x1>=rectx2 && x1<=rectx1 && y1<=recty1 && y1>=recty2) return true
+    else return false
   }
 
   def ST_Within(pointString1:String, pointString2:String, distance:Double): Boolean =
@@ -45,7 +51,7 @@ object SpatialQuery extends App{
     pointDf.createOrReplaceTempView("point")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>{ST_Contains(queryRectangle,pointString)})
+    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>(ST_Contains(queryRectangle,pointString)))
 
     val resultDf = spark.sql("select * from point where ST_Contains('"+arg2+"',point._c0)")
     resultDf.show()
@@ -62,7 +68,7 @@ object SpatialQuery extends App{
     rectangleDf.createOrReplaceTempView("rectangle")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>{ST_Contains(queryRectangle,pointString)})
+    spark.udf.register("ST_Contains",(queryRectangle:String, pointString:String)=>(ST_Contains(queryRectangle,pointString)))
 
     val resultDf = spark.sql("select * from rectangle,point where ST_Contains(rectangle._c0,point._c0)")
     resultDf.show()
@@ -76,7 +82,7 @@ object SpatialQuery extends App{
     pointDf.createOrReplaceTempView("point")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=> {ST_Within(pointString1, pointString2, distance)})
+    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=> (ST_Within(pointString1, pointString2, distance)))
 
     val resultDf = spark.sql("select * from point where ST_Within(point._c0,'"+arg2+"',"+arg3+")")
     resultDf.show()
@@ -93,7 +99,7 @@ object SpatialQuery extends App{
     pointDf2.createOrReplaceTempView("point2")
 
     // YOU NEED TO FILL IN THIS USER DEFINED FUNCTION
-    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=> {ST_Within(pointString1, pointString2, distance)})
+    spark.udf.register("ST_Within",(pointString1:String, pointString2:String, distance:Double)=> (ST_Within(pointString1, pointString2, distance)))
     val resultDf = spark.sql("select * from point1 p1, point2 p2 where ST_Within(p1._c0, p2._c0, "+arg3+")")
     resultDf.show()
 
