@@ -33,19 +33,11 @@ object HotzoneAnalysis {
 
     // YOU NEED TO CHANGE THIS PART
 
+    val orderedJoinResult = spark.sql("select rectangle, count(point) as numberOfPoints from joinResult group by rectangle order by rectangle asc").persist()
+    orderedJoinResult.createOrReplaceTempView("orderedResult")
 
-    // We get output something like [rectangleString, pointString] this means that a pointString falls within the rectangleString.
-    // Here rectangleString is something like "-73.795658,40.743334,-73.753772,40.779114"
-    // pointString is like "-73.766,40.7534"
-    // |rectangleString S1, pointString P1|
-    // |rectangleString S1, pointString P2|
-    // |rectangleString S1, pointString P3|
-    // ...
-    // Count all the points that lie in a given rectangle. We need to do group by rectangle and count all the points that lie in that rectangle.
-    val temp1 = joinDf.groupBy("rectangle").agg(count("*").alias("count"))
-    return temp1.select("rectangle", "count").orderBy(asc("rectangle")).repartition(1)
+    return orderedJoinResult
 
-    // return joinDf // YOU NEED TO CHANGE THIS PART
   }
 
 }

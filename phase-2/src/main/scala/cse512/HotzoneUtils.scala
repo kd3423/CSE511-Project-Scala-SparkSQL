@@ -10,10 +10,10 @@ object HotzoneUtils {
     val recPts = queryRectangle.split(",")
     val pt = pointString.split(",")
 
-    val rectx1 = queryRectangle(0).toDouble
-    val recty1 = queryRectangle(1).toDouble
-    val rectx2 = queryRectangle(2).toDouble
-    val recty2 = queryRectangle(3).toDouble
+    val rectx1 = recPts(0).toDouble
+    val recty1 = recPts(1).toDouble
+    val rectx2 = recPts(2).toDouble
+    val recty2 = recPts(3).toDouble
 
     val x1 = pt(0).toDouble
     val y1 = pt(1).toDouble
