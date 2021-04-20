@@ -46,43 +46,35 @@ object HotcellUtils {
     calendar.setTimeInMillis(timestamp.getTime)
     return calendar.get(Calendar.DAY_OF_MONTH)
   }
+  
+    def boundChecker(p: Int, l: Int, r: Int) : Int={
 
-  def IsCellInBounds(x:Double, y:Double, z:Int, minX:Double, maxX:Double, minY:Double, maxY:Double, minZ:Int, maxZ:Int): Boolean =
-  {
-    if ( (x >= minX) && (x <= maxX) && (y >= minY) && (y <= maxY) && (z >= minZ) && (z <= maxZ) ){
-      return true
-    }
-    return false
-  }
-
-  def CheckBoundary(point: Int, minVal: Int, maxVal: Int) : Int={
-
-    if (point == minVal || point == maxVal){
+    if (p == l || p == r){
       return 1
     }
     return 0
   }
+  
 
-  def GetNeighbourCount(minX:Int, minY:Int, minZ:Int, maxX:Int, maxY:Int, maxZ:Int, Xin:Int, Yin:Int, Zin:Int): Int ={
-
-    // corner, edge, face, inside
-    val pointLocationInCube: Map[Int, String] = Map(0->"inside", 1 -> "face", 2-> "edge", 3-> "corner")
-    val mapping: Map[String, Int] = Map("inside" -> 26, "face" -> 17, "edge" -> 11, "corner" -> 7)
-
-    var intialState = 0;
-
-    intialState += CheckBoundary(Xin, minX, maxX)
-    intialState += CheckBoundary(Yin, minY, maxY)
-    intialState += CheckBoundary(Zin, minZ, maxZ)
-
-    var location = pointLocationInCube.get(intialState).get.toString()
-
-    return mapping.get(location).get.toInt
+  def ZScore(x: Int, y: Int, z: Int, n: Int, avg:Double, sd: Double, total: Int, sum: Int): Double ={
+    val num = (sum.toDouble - (avg*total.toDouble))
+    val denom = sd * math.sqrt((((n.toDouble * total.toDouble) - (total.toDouble * total.toDouble)) / (n.toDouble-1.0).toDouble).toDouble).toDouble
+    return (num/denom).toDouble
   }
+  
+    def CountNeighbor(lx:Int, ly:Int, lz:Int, rx:Int, ry:Int, rz:Int, px:Int, py:Int, pz:Int): Int ={
 
-  def GetGScore(x: Int, y: Int, z: Int, numcells: Int, mean:Double, sd: Double, totalNeighbours: Int, sumAllNeighboursPoints: Int): Double ={
-    val numerator = (sumAllNeighboursPoints.toDouble - (mean*totalNeighbours.toDouble))
-    val denominator = sd * math.sqrt((((numcells.toDouble * totalNeighbours.toDouble) - (totalNeighbours.toDouble * totalNeighbours.toDouble)) / (numcells.toDouble-1.0).toDouble).toDouble).toDouble
-    return (numerator/denominator).toDouble
+    val locCube: Map[Int, String] = Map(0->"inside", 1 -> "face", 2-> "edge", 3-> "corner")
+    val m: Map[String, Int] = Map("inside" -> 26, "face" -> 17, "edge" -> 11, "corner" -> 7)
+
+    var i = 0;
+
+    i += boundChecker(px, lx, rx)
+    i += boundChecker(py, ly, ry)
+    i += boundChecker(pz, lz, rz)
+
+    var loc = locCube.get(i).get.toString()
+
+    return m.get(loc).get.toInt
   }
 }
