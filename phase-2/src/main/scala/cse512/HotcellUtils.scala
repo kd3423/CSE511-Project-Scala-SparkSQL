@@ -62,7 +62,7 @@ object HotcellUtils {
     return (num/denom).toDouble
   }
   
-    def CountNeighbor(lx:Int, ly:Int, lz:Int, rx:Int, ry:Int, rz:Int, px:Int, py:Int, pz:Int): Int ={
+  def CountNeighbor(lx:Int, ly:Int, lz:Int, rx:Int, ry:Int, rz:Int, px:Int, py:Int, pz:Int): Int ={
 
     val locCube: Map[Int, String] = Map(0->"inside", 1 -> "face", 2-> "edge", 3-> "corner")
     val m: Map[String, Int] = Map("inside" -> 26, "face" -> 17, "edge" -> 11, "corner" -> 7)
