@@ -48,49 +48,48 @@ object HotcellAnalysis {
     pickupInfo.createOrReplaceTempView("pickupInfoView")
 
     // Define IsCellBounds function to check if the point is inside the cube boundary.
-    spark.udf.register("IsCellInBounds", (x: Double, y:Double, z:Int) =>  ( (x >= minX) && (x <= maxX) && (y >= minY) && (y <= maxY) && (z >= minZ) && (z <= maxZ) ))
+    spark.udf.register("inBound", (x: Double, y:Double, z:Int) =>  ( (x >= minX) && (x <= maxX) && (y >= minY) && (y <= maxY) && (z >= minZ) && (z <= maxZ) ))
 
     // Get all x, y, z points which are inside the given Boundary(defined by minX-maxX, minY-maxY, minZ-maxZ)
-    val filteredPointsDf = spark.sql("select x,y,z from pickupInfoView where IsCellInBounds(x, y, z) order by z,y,x").persist()
-    filteredPointsDf.createOrReplaceTempView("filteredPointsView")
+    val filterDf = spark.sql("select x,y,z from pickupInfoView where inBound(x, y, z) order by z,y,x").persist()
+    filterDf.createOrReplaceTempView("filterDfView")
 
     // Count all the picksups from same cell --> x, y, z represents a cell and numPoints represents the number of pickups in that cell
-    val filteredPointCountDf = spark.sql("select x,y,z,count(*) as numPoints from filteredPointsView group by z,y,x order by z,y,x").persist()
-    filteredPointCountDf.createOrReplaceTempView("filteredPointCountDfView")
+    val filterpDf = spark.sql("select x,y,z,count(*) as numPoints from filterDfView group by z,y,x order by z,y,x").persist()
+    filterpDf.createOrReplaceTempView("filterpDfView")
 
     // Define square function. This is
-    spark.udf.register("square", (inputX: Int) => (inputX*inputX).toDouble)
-    val sumofPoints = spark.sql("select count(*) as numCellsWithAtleastOnePoint, sum(numPoints) as totalPointsInsideTheGivenArea, sum(square(numPoints)) as squaredSumOfAllPointsInGivenArea from filteredPointCountDfView")
-    sumofPoints.createOrReplaceTempView("sumofPoints")
+    spark.udf.register("square", (x: Int) => (x*x).toDouble)
+    val sPoints = spark.sql("select count(*) as countOnePoinCells, sum(numPoints) as totalPoints, sum(square(numPoints)) as squaredCells from filterpDfView")
+    sPoints.createOrReplaceTempView("sPoints")
 
-    val numCellsWithAtleastOnePoint = sumofPoints.first().getLong(0)
-    val totalPoints = sumofPoints.first().getLong(1) //sigma xj
-    val squaredsumcells = sumofPoints.first().getDouble(2) //sigma (xj**2)
-
-
-    val Xbar = totalPoints / numCells
-    val SD = math.sqrt((squaredsumcells / numCells) - (Xbar * Xbar) )
+    val countOnePoinCells = sPoints.first().getLong(0)
+    val totalPoints = sPoints.first().getLong(1) //sigma xj
+    val squaredCells = sPoints.first().getDouble(2) //sigma (xj**2)
 
 
-    spark.udf.register("GetNeighbourCount", (minX: Int, minY: Int, minZ: Int, maxX: Int, maxY: Int, maxZ: Int, Xin: Int, Yin: Int, Zin: Int)
-    => ((HotcellUtils.GetNeighbourCount(minX, minY, minZ, maxX, maxY, maxZ, Xin, Yin, Zin))))
+    val X = totalPoints / numCells
+    val SD = math.sqrt((squaredCells / numCells) - (X * X) )
+
+    spark.udf.register("CountNeighbor", (lx:Int, ly:Int, lz:Int, rx:Int, ry:Int, rz:Int, px:Int, py:Int, pz:Int)
+    => ((HotcellUtils.CountNeighbor(lx, ly, lz, rx, ry, rz, px, py, pz))))
     val Neighbours = spark.sql("select " +
                                                 "view1.x as x, " +
                                                 "view1.y as y, " +
                                                 "view1.z as z, " +
-                                                "GetNeighbourCount("+minX + "," + minY + "," + minZ + "," + maxX + "," + maxY + "," + maxZ + "," + "view1.x,view1.y,view1.z) as totalNeighbours, " +   // function to get the number of neighbours of x,y,z
+                                                "CountNeighbor("+minX + "," + minY + "," + minZ + "," + maxX + "," + maxY + "," + maxZ + "," + "view1.x,view1.y,view1.z) as totalNeighbours, " +   // function to get the number of neighbours of x,y,z
                                                 "count(*) as neighboursWithValidPoints, " +  // count the neighbours with atLeast one pickup point
                                                 "sum(view2.numPoints) as sumAllNeighboursPoints " +
-                                                "from filteredPointCountDfView as view1, filteredPointCountDfView as view2 " +    // two tables to join
+                                                "from filterpDfView as view1, filterpDfView as view2 " +    // two tables to join
                                                 "where (view2.x = view1.x+1 or view2.x = view1.x or view2.x = view1.x-1) and (view2.y = view1.y+1 or view2.y = view1.y or view2.y = view1.y-1) and (view2.z = view1.z+1 or view2.z = view1.z or view2.z = view1.z-1) " +   //join condition
                                                 "group by view1.z, view1.y, view1.x order by view1.z, view1.y, view1.x").persist()
 
     Neighbours.createOrReplaceTempView("NeighboursView")
 
-    spark.udf.register("GetGScore", (x: Int, y: Int, z: Int, numcells: Int, mean:Double, sd: Double, totalNeighbours: Int, sumAllNeighboursPoints: Int) => ((
-      HotcellUtils.GetGScore(x, y, z, numcells, mean, sd, totalNeighbours, sumAllNeighboursPoints))))
+    spark.udf.register("ZScore", (x: Int, y: Int, z: Int, n: Int, avg:Double, sd: Double, total: Int, sum: Int) => ((
+      HotcellUtils.ZScore(x, y, z, n, avg, sd, total, sum))))
     val NeighboursDesc = spark.sql("select x, y, z, " +
-                                            "GetGScore(x, y, z," +numCells+ ", " + Xbar + ", " + SD + ", totalNeighbours, sumAllNeighboursPoints) as gi_statistic " +
+                                            "ZScore(x, y, z," +numCells+ ", " + X + ", " + SD + ", totalNeighbours, sumAllNeighboursPoints) as gi_statistic " +
                                             "from NeighboursView " +
                                             "order by gi_statistic desc")
     NeighboursDesc.createOrReplaceTempView("NeighboursDescView")
